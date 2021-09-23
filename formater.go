@@ -1,5 +1,7 @@
 package pine
 
+import "encoding/json"
+
 type LogLevel string
 
 const (
@@ -11,17 +13,30 @@ const (
 	FatalLevel = LogLevel("Fatal")
 )
 
-func Formate(ch <-chan *origin) {
-	// data := <-ch
-	// for k,v:=range  ints{
-	// 	strs[k]=strconv.FormatInt(v, 10)
-	// }
+func formate() {
+	for data := range originChan {
 
-	// for k,v := range floats {
-	// 	strs[k]=strconv.FormatFloat(v, 'f', -1, 64)
-	// }
+		fmap := make(map[string]string, len(data.Fields))
+		for _, v := range data.Fields {
+			res := v.Input()
+			fmap[res.Key] = res.Val
+		}
+		bs,_:=json.Marshal(fmap)
 
-	// for k,v := range bools {
-	// 	strs[k]=strconv.FormatBool(v)
-	// }
+		switch data.Level {
+		case DebugLevel:
+			formatChan <- &ForamteData{
+				Ts:      data.Ts,
+				Foramte: bs,
+			}
+		case InfoLevel:
+		case ErrorLevel:
+		case WarnLevel:
+		case FatalLevel:
+		default:
+			// 打入黑洞
+
+		}
+	}
+
 }
